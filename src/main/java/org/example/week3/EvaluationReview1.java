@@ -1,6 +1,8 @@
 package org.example.week3;
 
 import java.util.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 1.please write down design document for your most recent project.
@@ -106,16 +108,191 @@ class StreamAPITest {
  *      -> ..
  *
  *
- * blocking queue
  *
+ */
+
+/**
+ * blocking queue
+ */
+class MyArrayBlockingQueue<E> {
+    private final Object[] queue;
+    private final ReentrantLock lock;
+    private final Condition full;
+    private final Condition empty;
+    private int size;
+    private int start, end;
+
+    public MyArrayBlockingQueue(int size) {
+        this.size = size;
+        queue = new Object[size];
+        lock = new ReentrantLock();
+        full = lock.newCondition();
+        empty = lock.newCondition();
+    }
+
+    public E poll() {
+        lock.lock();
+        E ele = null;
+        try {
+            while(size == 0) {
+                empty.await();
+            }
+            ele = (E)queue[start++];
+            start %= queue.length;
+            size--;
+            full.signal();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+        return ele;
+    }
+
+    public void offer(E e) {
+        lock.lock();
+        try {
+            while (size == queue.length) {
+                full.await();
+            }
+            queue[end++] = e;
+            end %= queue.length;
+            size++;
+            empty.signal();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+/**
+ * ForkJoinPool vs ThreadPoolExecutor
  * callable vs runnable	 where do we use callable
  * Thread pool : executor vs executors vs executorService
  * completable future vs Future get() vs join()
- *
- * ioc vs di
- * controller "/all", "/get/all"
- * restcontroller vs controller
- * what is rest api
- *
- * Design Pattern ->
+ * CompletableFuture f1, f2, f3
+ * CompletableFuture<Void> cf = CompletableFuture.allOf(array of CompletableFuture)
+ * return cf.thenApply(Void -> {
+ *     f1.join()
+ *     f2.join()
+ *     f3.join()
+ *     return res;
+ * }).join();
  */
+class CFTest {
+    public static void main(String[] args) {
+
+    }
+}
+/**
+ * TimeWheel
+ * [0][1][2]...[59]  min
+ *           i
+ * [0][1][2].[40].[59]  second
+ *  j
+ *
+ * msg, 30min 28s
+ * new Node(msg, timestamp)
+ *
+ *
+ * HashedTimeWheel
+ */
+
+/**
+ * ioc vs di
+ *      1. @Controller, @Component, @Service, @Repository, @Bean
+ *      2. @Autowired   -> setter, constructor, field
+ *          interface A -> impl1, impl2
+ *          private A impl1;
+ *      3. @Qualifier -> By Name
+ *
+ * SpringMVC
+ *
+ *      -> dispatcherServlet (/*) -> handler mapping -> controller
+ *              |
+ *            view resolver
+ *             |
+ *           model and view
+ *
+ *
+ *       -> dispatcherServlet (/*) -> handler mapping -> controller
+ *             |
+ *          Http Message Converter (Jackson)
+ *            |
+ *          json
+ *
+ *  @RestController  =  @ResponseBody + @Controller
+ *  @Controller
+ *
+ *  db sequence generates id
+ *
+ * "/v1/users" + post  => return created id
+ * "/v1/users" + get
+ * "/v1/users/{id}" + get
+ * "/v1/users/{id}" + put(idempotent)
+ * "/v1/users/{id}" + delete
+ * what is rest api
+ * TDD
+ *      1. requirements (features / input / output / error / corner cases)..
+ *      2. design flow / structure / code (interface / abstract class / methods(TODO))
+ *      3. write test cases (junit test / ..)
+ *      4. impl methods / logic
+ *      5. run test cases
+ *      6. debug..
+ *
+ * Good Rest api / meets production standard
+ *      follow rest api standard / http standard
+ *      security ->
+ *      versioning / Flexibility / Extensibility => SOLID
+ *      error handling + logging -> debug / monitor
+ *      performance (tuning)
+ *      documentation
+ *      CAP -> CP / AP
+ *
+ *
+ * SOLID
+ *      Single Responsibility
+ *      Open Close
+ *      Liskov Substitution
+ *      Interface Segregation
+ *      Dependency Inversion
+ *
+ * int[] arr = new int[Integer.MAX_VALUE];
+ * class Student {
+ *     public boolean equals(Object obj) {
+ *         //obj is null ? obj == this
+ *         //class type
+ *         //convert to xx type
+ *         //compare value
+ *     }
+ *     public int hashCode() {
+ *         return Objects.hash(val1, val2);
+ *     }
+ * }
+ * HashMap<Student, Integer> map;
+ *
+ *
+ *
+ * 1. RestTemplate -> send request to 3rd party api
+ * 2. get result return to user
+ *
+ * github ->
+ */
+
+class Student {
+    private String name;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Student student = (Student) o;
+        return Objects.equals(name, student.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
+    }
+}
