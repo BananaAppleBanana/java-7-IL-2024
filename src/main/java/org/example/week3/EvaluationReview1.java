@@ -296,3 +296,24 @@ class Student {
         return Objects.hash(name);
     }
 }
+
+/**
+ *  tomcat
+ *
+ *          ->  waiting queue ->  worker thread1
+ *                            ->  worker thread2
+ *                            -> max worker thread
+ *
+ *  1. constructor injection
+ *  2. return ResponseEntity + HttpStatus
+ *  3. @GetMapping(params = "")
+ *  4. impl logic in service layer
+ *  5. configure resttemplate bean in configuration class
+ *  6. inject rest template
+ *  7. centralize URL (properties, utilties class)
+ *  8. CompletableFuture.join()
+ *  9. RestTemplate.getForObject(url, Type[].class)
+ *  10. Exception => @ExceptionHandler + @Controller
+ *  -----------------------------------------------------------
+ *  Design Pattern
+ */
