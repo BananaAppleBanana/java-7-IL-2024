@@ -8,7 +8,7 @@ package org.example.week5;
  *      producer ->  queue[msg][msg] ->  consumer
  *                                   ->  consumer
  *  vs
- *  kafka
+ *
  *
  *      producer  ->   broker(topic - partition) -> consumer group
  *                                                  consumer pull msg from partition
